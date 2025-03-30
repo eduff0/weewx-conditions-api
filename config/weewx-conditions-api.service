@@ -1,0 +1,14 @@
+[Unit]
+Description=WeeWX Conditions API Server
+After=network.target
+
+[Service]
+User=sysadmin
+Group=sysadmin
+WorkingDirectory=/home/sysadmin/weewx-env/lib/python3.11/site-packages/weewx_conditions_api
+ExecStart=/home/sysadmin/weewx-env/bin/python3 -m weewx_conditions_api.api_server
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
