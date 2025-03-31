@@ -1,14 +1,5 @@
 # weewx-conditions-api
-Creates a REST API to expose current conditions from WeeWX, with initial focus on MagicMirror clients.
-
-TODO:
--rework install scripts to use relative paths.
--check that WeeWX is installed but don't automatically install it if it isn't.
--make a sample file for weewx-conditions-api.service
--create an installation package so that git doen't need to be installed.
--reorder attributes in order of "importance"
--add a second endpoint to demonstrate that the extension is scalable
--add reference to working only with SQLite in the description 
+Creates a REST API to expose current conditions from SQLite database used by WeeWX, with initial focus on MagicMirror clients.
 
 Basic instructions:
 1) Log into WeeWx server
@@ -43,3 +34,8 @@ Basic instructions:
 	sudo systemctl enable weewx-conditions-api.service
 	sudo systemctl start weewx-conditions-api.service
 	sudo systemctl status weewx-conditions-api.service
+	
+TODO:
+-create an installation package so that git doen't need to be installed.
+-add a second endpoint to demonstrate that the extension is scalable
+-add reference to working only with SQLite in the description 
