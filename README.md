@@ -35,7 +35,7 @@ Basic instructions:
 	sudo systemctl start weewx-conditions-api.service
 	sudo systemctl status weewx-conditions-api.service
 
-If needing to consume this API using the weather module in MagicMirror, which is the reason the API was created (but not limited to this use case), then:
+If needing to consume this API using the weather module in MagicMirror, which is the reason the API was created (but not limited to this use case), then
 5) Install WeeWX weather module provider for MagicMirror
     Create file "weewxmm.js" in ~ /MagicMirror/modules/default/weather/providers
 	File "weewxmm.js" is available in the Documents folder of this repository
@@ -45,6 +45,7 @@ If needing to consume this API using the weather module in MagicMirror, which is
 	File "config (MagicMirror sample).js" is available in the Documents folder of this repository.
 	The important thing is to edit the "apiBase" attribute to point to the WeeWx server and port for which weewx-conditions-api is listening.
 	
+	File contents
 	modules: [
                 {
                         module: "weather",
