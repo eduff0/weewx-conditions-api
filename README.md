@@ -68,7 +68,7 @@ Create the following file:
 ~/MagicMirror/modules/default/weather/providers/weewxmm.js
 ```
 
-> A sample `weewxmm.js` is available in the **Documents** folder of this repository.
+> The `weewxmm.js` file is available in the **Documents** folder of this repository.
 
 ### 6. Configure MagicMirror to use the provider
 
@@ -99,7 +99,7 @@ modules: [
 ]
 ```
 
-> A sample MagicMirror config (`config (MagicMirror sample).js`) is also available in the **Documents** folder of this repo.
+> A sample MagicMirror config.js file is also available in the **Documents** folder of this repo (named `config (MagicMirror sample).js`).
 
 ---
 
