@@ -1,5 +1,5 @@
 # weewx-conditions-api
-Creates a REST API to expose current conditions from SQLite database used by WeeWX, with initial focus on MagicMirror clients.
+Creates a REST API to expose current conditions from SQLite database used by WeeWX, with initial focus on MagicMirror clients.  The initial version returns a JSON structure corresponding to current conditions in the MagiceMirror Weather Object.  In the future, additional structures could be exposed from WeeWX such as WeatherObject, Weather.gov, Pirate Weather, etc.
 
 Basic instructions:
 1) Log into WeeWx server
@@ -34,6 +34,41 @@ Basic instructions:
 	sudo systemctl enable weewx-conditions-api.service
 	sudo systemctl start weewx-conditions-api.service
 	sudo systemctl status weewx-conditions-api.service
+
+If needing to consume this API using the weather module in MagicMirror, which is the reason the API was created (but not limited to this use case), then:
+5) Install WeeWX weather module provider for MagicMirror
+    Create file "weewxmm.js" in ~ /MagicMirror/modules/default/weather/providers
+	File "weewxmm.js" is available in the Documents folder of this repository
+
+6) Configure MagicMirror to use the provider
+    Edit the MagicMirror configuration file, "config.js".
+	File "config (MagicMirror sample).js" is available in the Documents folder of this repository.
+	The important thing is to edit the "apiBase" attribute to point to the WeeWx server and port for which weewx-conditions-api is listening.
+	
+	modules: [
+                {
+                        module: "weather",
+                        position: "top_right",
+                        config: {
+                                weatherProvider: "weewxmm",
+                                apiBase: "http://192.168.1.101:5000", // your WeeWX API URL
+                                units: "imperial",
+                                tempUnits: "imperial",
+                                degreeLabel: true,
+                                windUnits: "imperial",
+                                showWindDirection: true,
+                                showWindDirectionAsArrow: true,
+                                timeFormat: 12,
+                                showPeriod: true,
+                                lang: "en",
+                                useCorsProxy: false,
+                                type: "current",
+                                showSun: true,
+                                showHumidity: true,
+                                showWindDirection: true
+                        }
+                }
+	]	
 	
 TODO:
 -create an installation package so that git doen't need to be installed.
