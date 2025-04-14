@@ -1,77 +1,115 @@
 # weewx-conditions-api
-Creates a REST API to expose current conditions from SQLite database used by WeeWX, with initial focus on MagicMirror clients.  The initial version returns a JSON structure corresponding to current conditions in the MagiceMirror Weather Object.  In the future, additional structures could be exposed from WeeWX such as WeatherObject, Weather.gov, Pirate Weather, etc.
 
-Basic instructions:
-1) Log into WeeWx server
+Creates a REST API to expose current weather conditions from the SQLite database used by [WeeWX](http://weewx.com/), with initial focus on [MagicMirror](https://magicmirror.builders/) clients.
 
-2) Activate virtual environment in which WeeWx is installed
-	source /home/sysadmin/weewx-env/bin/activate
+The API returns a JSON structure compatible with the MagicMirror `weather` module’s `WeatherObject` format. Future versions may support other formats, such as Weather.gov or Pirate Weather.
 
-3) Install weewx-conditions-api
-	pip install git+https://<username>:<token>@github.com/eduff0/weewx-conditions-api.git
+---
 
-4) Configure service to automatically start
-	sudo nano /etc/systemd/system/weewx-conditions-api.service
-	File contents
-		[Unit]
-		Description=WeeWX Conditions API Server
-		After=network.target
+## Basic Setup Instructions
 
-		[Service]
-		User=sysadmin
-		Group=sysadmin
-		WorkingDirectory=/home/sysadmin/weewx-env/lib/python3.11/site-packages/weewx_conditions_api
-		ExecStart=/home/sysadmin/weewx-env/bin/python3 -m weewx_conditions_api.api_server
-		Restart=always
-		RestartSec=5
+### 1. Log into the WeeWX server
 
-		[Install]
-		WantedBy=multi-user.target
+### 2. Activate the virtual environment where WeeWX is installed
+```bash
+source /home/sysadmin/weewx-env/bin/activate
+```
 
-	sudo mkdir -p /home/sysadmin/weewx-env/lib/python3.11/site-packages/weewx_conditions_api
-	sudo systemctl daemon-reexec
-	sudo systemctl daemon-reload
-	sudo systemctl enable weewx-conditions-api.service
-	sudo systemctl start weewx-conditions-api.service
-	sudo systemctl status weewx-conditions-api.service
+### 3. Install the `weewx-conditions-api` package
+```bash
+pip install git+https://<username>:<token>@github.com/eduff0/weewx-conditions-api.git
+```
 
-If needing to consume this API using the weather module in MagicMirror, which is the reason the API was created (but not limited to this use case), then
-5) Install WeeWX weather module provider for MagicMirror
-    Create file "weewxmm.js" in ~ /MagicMirror/modules/default/weather/providers
-	File "weewxmm.js" is available in the Documents folder of this repository
+### 4. Configure systemd service to start the API automatically
 
-6) Configure MagicMirror to use the provider
-    Edit the MagicMirror configuration file, "config.js".
-	File "config (MagicMirror sample).js" is available in the Documents folder of this repository.
-	The important thing is to edit the "apiBase" attribute to point to the WeeWx server and port for which weewx-conditions-api is listening.
-	
-	File contents
-	modules: [
-                {
-                        module: "weather",
-                        position: "top_right",
-                        config: {
-                                weatherProvider: "weewxmm",
-                                apiBase: "http://192.168.1.101:5000", // your WeeWX API URL
-                                units: "imperial",
-                                tempUnits: "imperial",
-                                degreeLabel: true,
-                                windUnits: "imperial",
-                                showWindDirection: true,
-                                showWindDirectionAsArrow: true,
-                                timeFormat: 12,
-                                showPeriod: true,
-                                lang: "en",
-                                useCorsProxy: false,
-                                type: "current",
-                                showSun: true,
-                                showHumidity: true,
-                                showWindDirection: true
-                        }
-                }
-	]	
-	
-TODO:
--create an installation package so that git doen't need to be installed.
--add a second endpoint to demonstrate that the extension is scalable
--add reference to working only with SQLite in the description 
+Create the service file:
+```bash
+sudo nano /etc/systemd/system/weewx-conditions-api.service
+```
+
+Paste the following content:
+```ini
+[Unit]
+Description=WeeWX Conditions API Server
+After=network.target
+
+[Service]
+User=sysadmin
+Group=sysadmin
+WorkingDirectory=/home/sysadmin/weewx-env/lib/python3.11/site-packages/weewx_conditions_api
+ExecStart=/home/sysadmin/weewx-env/bin/python3 -m weewx_conditions_api.api_server
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then run the following commands to enable and start the service:
+```bash
+sudo mkdir -p /home/sysadmin/weewx-env/lib/python3.11/site-packages/weewx_conditions_api
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable weewx-conditions-api.service
+sudo systemctl start weewx-conditions-api.service
+sudo systemctl status weewx-conditions-api.service
+```
+
+---
+
+## Integration with MagicMirror
+
+Although the API can be used independently, it was designed with MagicMirror integration in mind.
+
+### 5. Install the MagicMirror weather provider
+
+Create the following file:
+```bash
+~/MagicMirror/modules/default/weather/providers/weewxmm.js
+```
+
+> A sample `weewxmm.js` is available in the **Documents** folder of this repository.
+
+### 6. Configure MagicMirror to use the provider
+
+Edit your MagicMirror `config.js` to use the new provider. Example module config:
+```js
+modules: [
+  {
+    module: "weather",
+    position: "top_right",
+    config: {
+      weatherProvider: "weewxmm",
+      apiBase: "http://192.168.1.101:5000", // your WeeWX API base URL
+      units: "imperial",
+      tempUnits: "imperial",
+      degreeLabel: true,
+      windUnits: "imperial",
+      showWindDirection: true,
+      showWindDirectionAsArrow: true,
+      timeFormat: 12,
+      showPeriod: true,
+      lang: "en",
+      useCorsProxy: false,
+      type: "current",
+      showSun: true,
+      showHumidity: true
+    }
+  }
+]
+```
+
+> A sample MagicMirror config (`config (MagicMirror sample).js`) is also available in the **Documents** folder of this repo.
+
+---
+
+## TODO
+
+- [ ] Create an installation package so that Git is not required.
+- [ ] Add a second endpoint to demonstrate that the API can scale to multiple JSON structures.
+---
+
+## Notes
+
+- This API is intended for local network use and does **not** include authentication.
+- Tested with Python 3.11 and WeeWX running in a virtual environment.
