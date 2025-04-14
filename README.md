@@ -1,8 +1,8 @@
 # weewx-conditions-api
 
-Creates a REST API to expose current weather conditions from the SQLite database used by [WeeWX](http://weewx.com/), with initial focus on [MagicMirror](https://magicmirror.builders/) clients.
+Creates a REST API, using Flask, to expose current weather conditions from the SQLite database used by [WeeWX](http://weewx.com/), with initial focus on [MagicMirror](https://magicmirror.builders/) clients.
 
-The API returns a JSON structure compatible with the MagicMirror `weather` module’s `WeatherObject` format. Future versions may support other formats, such as Weather.gov or Pirate Weather.
+The API returns a JSON structure compatible with the MagicMirror `weather` module’s `WeatherObject` format. Future versions may support other formats, such as Openweathermap options, Weather.gov, or Pirate Weather.
 
 ---
 
