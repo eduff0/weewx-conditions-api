@@ -2,7 +2,7 @@
 
 Creates a REST API, using Flask, to expose current weather conditions from the SQLite database used by [WeeWX](http://weewx.com/), with initial focus on [MagicMirror](https://magicmirror.builders/) clients (see instructions for MagicMirror below).
 
-The API returns a JSON structure compatible with the MagicMirror `weather` module’s `WeatherObject` format. Future versions may support other formats, such as Openweathermap options, Weather.gov, or Pirate Weather.
+The API has a single endpoint that returns a JSON structure compatible with the MagicMirror `weather` module’s [WeatherObject](https://docs.magicmirror.builders/development/weather-provider.html#weatherobject) format. Future versions may have endpoints for other formats, such as Openweathermap, Weather.gov, or Pirate Weather.
 ## Example of JSON returned by API
 
 ```json
