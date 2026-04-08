@@ -1,6 +1,6 @@
 # weewx-conditions-api
 
-Creates a REST API, using Flask, to expose current weather conditions from the SQLite database used by [WeeWX](http://weewx.com/), with initial focus on [MagicMirror](https://magicmirror.builders/) clients (see instructions for MagicMirror below).
+Creates a REST API, using Flask, to expose current weather conditions from the SQLite database used by [WeeWX](http://weewx.com/), with initial focus on [MagicMirror](https://magicmirror.builders/) clients (see instructions for MagicMirror below) but also support for OpenWeatherMap.
 
 ## API Endpoints
 
@@ -39,8 +39,8 @@ Or open the URLs in a browser (replace the IP with your WeeWX server's address).
 
 ```json
 {
-  "lat": 44.9,
-  "lon": -93.2,
+  "lat": 43.9,
+  "lon": -91.2,
   "timezone": "America/Chicago",
   "timezone_offset": -18000,
   "current": {
@@ -164,7 +164,7 @@ modules: [
     position: "top_right",
     config: {
       weatherProvider: "weewxmm",
-      apiBase: "http://192.168.1.101:5000", // your WeeWX API base URL
+      apiBase: "http://192.168.1.111:5000", // your WeeWX API base URL
       units: "imperial",
       tempUnits: "imperial",
       degreeLabel: true,
