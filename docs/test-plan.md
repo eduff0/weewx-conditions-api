@@ -43,26 +43,38 @@ tests/
 
 ### Fixture database
 
-The fixture database has a minimal `archive` table with one row of US-customary data chosen so the converted metric values match the README examples exactly.
+WeeWX creates and initializes the SQLite database (including the full `archive` schema) automatically on first run — there is no manual schema creation step. The fixture database is sourced from a real WeeWX-generated file.
 
-Schema and seed data:
+**One-time fixture creation (done in WSL, not repeated per test run):**
 
-```sql
-CREATE TABLE archive (
-    dateTime     INTEGER NOT NULL UNIQUE PRIMARY KEY,
-    usUnits      INTEGER NOT NULL,
-    `interval`   INTEGER NOT NULL,
-    barometer    REAL,
-    outTemp      REAL,
-    outHumidity  REAL,
-    windSpeed    REAL,
-    windDir      REAL
-);
+1. Run the WeeWX simulator long enough for it to initialize the database (it creates the DB on startup, before writing any rows):
 
--- usUnits=1 (US customary): °F, mph, inHg
--- Converts to: 8.8°C, 2.34 m/s, 1013.2 hPa
-INSERT INTO archive VALUES (1744700000, 1, 5, 29.92, 47.84, 57.0, 5.24, 316.0);
+   ```bash
+   weewxd ~/weewx-test-data/weewx.conf &
+   sleep 5 && kill %1
+   ```
+
+2. Copy the empty (schema-only) database to the repo:
+
+   ```bash
+   cp ~/weewx-test-data/weewx.sdb \
+      /mnt/c/Users/eric/GitHub/weewx-conditions-api/tests/fixtures/fixture.db
+   ```
+
+3. Commit `tests/fixtures/fixture.db` — it contains only the schema, no rows.
+
+**Why source it from WeeWX:** The real archive schema has ~100 columns. Using it ensures the fixture matches production exactly and avoids schema drift from a hand-maintained `CREATE TABLE`.
+
+**Seeding known rows at test time:** `conftest.py` copies `fixture.db` to a `tmp_path` before each test and inserts one row of US-customary data chosen so converted metric values match the README examples exactly:
+
+```python
+# usUnits=1 (US customary): °F, mph, inHg
+# Converts to: temp=8.8°C, wind=2.34 m/s, pressure=1013.2 hPa
+INSERT_ROW = (1744700000, 1, 5, 29.92, 47.84, 57.0, 5.24, 316.0)
+# columns:     dateTime   usU int  baro   temp   hum   wind  dir
 ```
+
+Using `tmp_path` means tests never write to the committed `.db` file, so it stays schema-only and repeatable.
 
 The fixture `weewx.conf` only needs the sections `_get_weather_data()` reads:
 
@@ -73,14 +85,14 @@ The fixture `weewx.conf` only needs the sections `_get_weather_data()` reads:
 
 [DatabaseTypes]
     [[SQLite]]
-        SQLITE_ROOT = /path/to/tests/fixtures
+        SQLITE_ROOT = %(here)s
 
 [Databases]
     [[archive_sqlite]]
         database_name = fixture.db
 ```
 
-The path under `SQLITE_ROOT` should be an absolute path set at test-fixture-creation time (or controlled via a `conftest.py` `tmp_path` copy so the committed `.db` is never written to during tests).
+`conftest.py` sets `WEEWX_CONF_PATH` to a rewritten copy of this file with `SQLITE_ROOT` pointing at the `tmp_path` directory containing the seeded database.
 
 ### Test cases
 
