@@ -16,7 +16,7 @@ import ephem
 # Enable CORS using flask_cors.
 from flask_cors import CORS
 
-CONF_PATH = '/home/sysadmin/weewx-data/weewx.conf'
+CONF_PATH = os.environ.get('WEEWX_CONF_PATH', '/home/sysadmin/weewx-data/weewx.conf')
 API_PORT = 5000
 
 logger = logging.getLogger(__name__)
