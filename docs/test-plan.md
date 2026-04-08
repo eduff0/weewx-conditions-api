@@ -195,7 +195,10 @@ weewx --gen-conf ~/weewx-test-data/weewx.conf
 
 [Simulator]
     driver = weewx.drivers.simulator
-    mode = simulator
+    mode = generator        # emits records as fast as possible; designed for testing
+
+[StdArchive]
+    archive_interval = 5    # seconds; default is 300 — set low so tests don't wait 5 minutes
 
 [DatabaseTypes]
     [[SQLite]]
@@ -207,6 +210,8 @@ weewx --gen-conf ~/weewx-test-data/weewx.conf
 ```
 
 Replace `<your-wsl-username>` with your WSL username (`whoami`).
+
+**Why `mode = generator`:** The WeeWX simulator has two modes. `simulator` sleeps between loop packets (real-time pacing). `generator` emits packets as fast as possible — the simulator source code describes it as "useful for testing". Combined with a short `archive_interval`, the database has rows within seconds of startup.
 
 **6. Install the API package into the same venv:**
 ```bash
@@ -220,7 +225,7 @@ pip install -e /mnt/c/Users/eric/GitHub/weewx-conditions-api
 Each integration test session:
 
 ```bash
-# Terminal 1 — start WeeWX simulator (generates a new row every 60s)
+# Terminal 1 — start WeeWX simulator (generator mode writes rows within seconds)
 source ~/weewx-env/bin/activate
 weewxd ~/weewx-test-data/weewx.conf
 
@@ -229,7 +234,7 @@ source ~/weewx-env/bin/activate
 WEEWX_CONF_PATH=~/weewx-test-data/weewx.conf python -m weewx_conditions_api.api_server
 ```
 
-Wait for WeeWX to write at least one archive record (up to 60 seconds on first run), then run the integration tests:
+Wait ~10 seconds for WeeWX to write the first archive record, then run the integration tests:
 
 ```bash
 # Terminal 3
