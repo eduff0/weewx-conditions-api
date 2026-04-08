@@ -2,13 +2,12 @@
 
 Creates a REST API, using Flask, to expose current weather conditions from the SQLite database used by [WeeWX](http://weewx.com/), with initial focus on [MagicMirror](https://magicmirror.builders/) clients (see instructions for MagicMirror below).
 
-The API has a single endpoint that returns a JSON structure compatible with the MagicMirror `weather` module's [WeatherObject](https://docs.magicmirror.builders/development/weather-provider.html#weatherobject) format. Future versions may have endpoints for other formats, such as Openweathermap, Weather.gov, or Pirate Weather.
+## API Endpoints
 
-## API Endpoint
-
-| Endpoint          | Description                                            |
-|-------------------|--------------------------------------------------------|
-| `GET /api/mmwo`   | Current conditions in MagicMirror WeatherObject format |
+| Endpoint          | Description                                                          |
+|-------------------|----------------------------------------------------------------------|
+| `GET /api/mmwo`   | Current conditions in MagicMirror WeatherObject format               |
+| `GET /api/owm`    | Current conditions in OpenWeatherMap One Call 3.0 `current` format   |
 
 ## Testing the API
 
@@ -16,11 +15,12 @@ Once the service is running, verify it with curl:
 
 ```bash
 curl http://192.168.1.111:5000/api/mmwo
+curl http://192.168.1.111:5000/api/owm
 ```
 
-Or open `http://192.168.1.111:5000/api/mmwo` in a browser (replace the IP with your WeeWX server's address).
+Or open the URLs in a browser (replace the IP with your WeeWX server's address).
 
-## Example of JSON returned by API
+## Example JSON: `/api/mmwo`
 
 ```json
 {
@@ -34,6 +34,54 @@ Or open `http://192.168.1.111:5000/api/mmwo` in a browser (replace the IP with y
   "windSpeed": 2.34
 }
 ```
+
+## Example JSON: `/api/owm`
+
+```json
+{
+  "lat": 44.9,
+  "lon": -93.2,
+  "timezone": "America/Chicago",
+  "timezone_offset": -18000,
+  "current": {
+    "dt": 1744700000,
+    "sunrise": 1744701234,
+    "sunset": 1744745678,
+    "temp": 8.8,
+    "feels_like": null,
+    "pressure": 1013.9,
+    "humidity": 57.1,
+    "dew_point": null,
+    "uvi": null,
+    "clouds": null,
+    "visibility": null,
+    "wind_speed": 2.34,
+    "wind_gust": null,
+    "wind_deg": 316.2,
+    "rain": {},
+    "snow": {},
+    "weather": []
+  }
+}
+```
+
+**Notes on `/api/owm`:**
+
+- `sunrise` and `sunset` return `null` for polar locations where the sun does not rise or set (ephem `AlwaysUpError`/`NeverUpError`). This is documented behavior, not an error.
+- `rain`, `snow`, and `weather` are always present but empty (`{}`, `{}`, `[]`). WeeWX does not currently provide precipitation accumulation or sky-condition data in the format these fields require.
+- Fields with no WeeWX equivalent (`feels_like`, `dew_point`, `uvi`, `clouds`, `visibility`, `wind_gust`) always return `null`.
+
+### Optional: explicit timezone configuration
+
+By default the API resolves the IANA timezone string from `/etc/localtime`. If your server's timezone symlink is non-standard, you can override it by adding a `timezone` key to the `[Station]` section of `weewx.conf`:
+
+```ini
+[Station]
+    ...
+    timezone = America/Chicago
+```
+
+This key is ignored by WeeWX itself and is read only by this API. It is the highest-priority source for the `timezone` field returned by `/api/owm`.
 
 ## Basic Setup Instructions
 
@@ -142,7 +190,7 @@ A sample MagicMirror config.js file is also available in the **Documents** folde
 ## TODO
 
 - [ ] Create an installation package so that Git is not required.
-- [ ] Add a second endpoint to demonstrate that the API can scale to multiple JSON structures.
+- [ ] Add automated tests for both endpoints.
 
 ---
 
