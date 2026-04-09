@@ -172,3 +172,6 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Internal work orders (not for public repo)
+docs/work_orders/
