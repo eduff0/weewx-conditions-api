@@ -4,10 +4,10 @@
 
 Testing is split into two layers that can run independently:
 
-| Layer | Requires WeeWX? | Speed | When to run |
-|-------|----------------|-------|-------------|
-| Unit / API | No | Fast (~seconds) | Every change, CI |
-| Integration | Yes (WSL simulator) | Slow (~minutes setup) | Before merging to main |
+| Layer        | Requires WeeWX?      | Speed                 | When to run            |
+|--------------|----------------------|-----------------------|------------------------|
+| Unit / API   | No                   | Fast (~seconds)       | Every change, CI       |
+| Integration  | Yes (WSL simulator)  | Slow (~minutes setup) | Before merging to main |
 
 The layers are separated so unit tests can run anywhere — Windows, WSL, or CI — without any services.
 
@@ -29,7 +29,7 @@ No additional dependencies. `ephem`, `weewx`, and `configobj` are already requir
 
 ### File layout
 
-```
+```text
 tests/
   fixtures/
     weewx.conf        # minimal config pointing at fixture.db
@@ -57,7 +57,7 @@ WeeWX creates and initializes the SQLite database (including the full `archive` 
 2. Copy the empty (schema-only) database to the repo:
 
    ```bash
-   cp ~/weewx-test-data/weewx.sdb \
+   cp ~/weewx-test-data/archive/weewx.sdb \
       /mnt/c/Users/eric/GitHub/weewx-conditions-api/tests/fixtures/fixture.db
    ```
 
@@ -99,7 +99,7 @@ The fixture `weewx.conf` only needs the sections `_get_weather_data()` reads:
 #### `test_helpers.py`
 
 | Test | What it checks |
-|------|---------------|
+|------|----------------|
 | `test_safe_round_none` | `safe_round(None, 1)` returns `None` |
 | `test_safe_round_value` | `safe_round(8.778, 1)` returns `8.8` |
 | `test_is_valid_iana_canonical` | `America/Chicago` → valid |
@@ -113,7 +113,7 @@ The fixture `weewx.conf` only needs the sections `_get_weather_data()` reads:
 #### `test_mmwo.py`
 
 | Test | Expected result |
-|------|----------------|
+|------|-----------------|
 | `test_mmwo_ok` | 200; `temperature` ≈ 8.8, `humidity` = 57.0, `windSpeed` ≈ 2.34, `windDirection` = 316.0, `pressure` ≈ 1013.2 |
 | `test_mmwo_timestamp_format` | `timestamp` ends with `Z`, is valid ISO-8601 |
 | `test_mmwo_sunrise_sunset_present` | both keys present, values are ISO datetime strings |
@@ -123,7 +123,7 @@ The fixture `weewx.conf` only needs the sections `_get_weather_data()` reads:
 #### `test_owm.py`
 
 | Test | Expected result |
-|------|----------------|
+|------|-----------------|
 | `test_owm_ok` | 200; top-level keys: `lat`, `lon`, `timezone`, `timezone_offset`, `current` |
 | `test_owm_temp` | `current.temp` ≈ 8.8 |
 | `test_owm_pressure` | `current.pressure` ≈ 1013.2 |
@@ -153,24 +153,27 @@ pytest tests/unit/ -v
 
 ### Why WSL, not Windows
 
-WeeWX is Linux-native. The API's production paths (`/etc/localtime`, `/etc/timezone`, `/home/sysadmin/...`) are Linux paths. Running in WSL keeps the test environment consistent with prod and avoids unspported WeeWX-on-Windows workarounds.
+WeeWX is Linux-native. The API's production paths (`/etc/localtime`, `/etc/timezone`, `/home/sysadmin/...`) are Linux paths. Running in WSL keeps the test environment consistent with prod and avoids unsupported WeeWX-on-Windows workarounds.
 
 ### One-time WSL setup
 
 These steps install WeeWX with the simulator driver into a dedicated virtual environment in WSL. They only need to be done once.
 
 **1. Install Ubuntu in WSL** (if not already):
+
 ```powershell
 # In PowerShell (Windows)
 wsl --install -d Ubuntu
 ```
 
 **2. Inside WSL — install system dependencies:**
+
 ```bash
 sudo apt update && sudo apt install -y python3-pip python3-venv python3-dev
 ```
 
 **3. Create a virtual environment for WeeWX:**
+
 ```bash
 python3 -m venv ~/weewx-env
 source ~/weewx-env/bin/activate
@@ -178,9 +181,10 @@ pip install weewx
 ```
 
 **4. Create a WeeWX data directory and config:**
+
 ```bash
 mkdir -p ~/weewx-test-data
-weewx --gen-conf ~/weewx-test-data/weewx.conf
+weectl station create ~/weewx-test-data --driver=weewx.drivers.simulator --no-prompt
 ```
 
 **5. Edit `~/weewx-test-data/weewx.conf`** — set these keys:
@@ -202,18 +206,19 @@ weewx --gen-conf ~/weewx-test-data/weewx.conf
 
 [DatabaseTypes]
     [[SQLite]]
-        SQLITE_ROOT = /home/<your-wsl-username>/weewx-test-data
+        SQLITE_ROOT = /home/<your-wsl-username>/weewx-test-data/archive
 
 [Databases]
     [[archive_sqlite]]
         database_name = weewx.sdb
 ```
 
-Replace `<your-wsl-username>` with your WSL username (`whoami`).
+Replace `<your-wsl-username>` with your WSL username (`whoami`). Note: `SQLITE_ROOT` must be an **absolute path** — a relative path will cause "unable to open database file" errors.
 
 **Why `mode = generator`:** The WeeWX simulator has two modes. `simulator` sleeps between loop packets (real-time pacing). `generator` emits packets as fast as possible — the simulator source code describes it as "useful for testing". Combined with a short `archive_interval`, the database has rows within seconds of startup.
 
 **6. Install the API package into the same venv:**
+
 ```bash
 pip install git+https://github.com/eduff0/weewx-conditions-api.git
 # Or, for local development:
@@ -246,7 +251,7 @@ pytest tests/integration/ -v
 #### `test_live.py`
 
 | Test | What it checks |
-|------|---------------|
+|------|----------------|
 | `test_mmwo_live_200` | `GET /api/mmwo` returns 200 |
 | `test_mmwo_live_schema` | all expected keys present, no unexpected keys |
 | `test_mmwo_live_types` | `temperature`, `humidity`, `windSpeed`, `windDirection`, `pressure` are floats or null; `timestamp` is a string ending in `Z`; `sunrise`/`sunset` are strings |
