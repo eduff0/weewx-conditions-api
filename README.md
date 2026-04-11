@@ -1,6 +1,6 @@
 # weewx-conditions-api
 
-Creates a REST API, using Flask, to expose current weather conditions from the SQLite database used by [WeeWX](http://weewx.com/), with initial focus on [MagicMirror](https://magicmirror.builders/) clients (see instructions for MagicMirror below) but also support for OpenWeatherMap.
+Creates a REST API, using Flask, to expose current weather conditions from the SQLite database used by [WeeWX](http://weewx.com/), with MagicMirror support available via the companion [MMM-WeeWX-Provider](https://github.com/eduff0/MMM-WeeWX-Provider) repository but also support for OpenWeatherMap.
 
 ## API Endpoints
 
@@ -139,51 +139,12 @@ sudo systemctl status weewx-conditions-api.service
 
 ---
 
-## Integration with MagicMirror
+## MagicMirror Integration
 
-Although the API can be used independently, it was designed with MagicMirror integration in mind.
-
-### 5. Install the MagicMirror weather provider
-
-Create the following file:
-
-```bash
-~/MagicMirror/modules/default/weather/providers/weewxmm.js
-```
-
-> The `weewxmm.js` file is available in the **Documents** folder of this repository.
-
-### 6. Configure MagicMirror to use the provider
-
-Edit your MagicMirror `config.js` to use the new provider. Example module config:
-
-```js
-modules: [
-  {
-    module: "weather",
-    position: "top_right",
-    config: {
-      weatherProvider: "weewxmm",
-      apiBase: "http://192.168.1.111:5000", // your WeeWX API base URL
-      units: "imperial",
-      tempUnits: "imperial",
-      degreeLabel: true,
-      windUnits: "imperial",
-      showWindDirection: true,
-      showWindDirectionAsArrow: true,
-      timeFormat: 12,
-      showPeriod: true,
-      lang: "en",
-      useCorsProxy: false,
-      type: "current",
-      showSun: true,
-      showHumidity: true
-    }
-  }
-]
-```
-
-A sample MagicMirror config.js file is also available in the **Documents** folder of this repo (named `config (MagicMirror sample).js`).
+A companion MagicMirror² weather provider is available in the
+[MMM-WeeWX-Provider](https://github.com/eduff0/MMM-WeeWX-Provider)
+repository. It implements the MagicMirror WeatherProvider interface and
+retrieves data from this API's `/api/mmwo` endpoint.
 
 ---
 
